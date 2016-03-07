@@ -2,10 +2,11 @@ package com.example.cuelogic.interview_test;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request.Method;
@@ -13,13 +14,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.example.cuelogic.interview_test.ApplicationController.AppController;
+import com.example.cuelogic.interview_test.Adapters.RecycledViewAdapter;
 import com.example.cuelogic.interview_test.Model.Animal;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,19 +30,27 @@ public class MainActivity extends Activity {
     // json response url
     private String urlJson = "http://192.168.10.104/imageData.php";
     private String jsonResponse = "";
-    private TextView txtResponse;
+    //private TextView txtResponse;
     private List<Animal> animalsList;
 
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        txtResponse = (TextView) findViewById(R.id.txtResponse);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         makeJsonObjectRequest();
+        mAdapter = new RecycledViewAdapter(MainActivity.this,animalsList);
+        mRecyclerView.setAdapter(mAdapter);
+
     }
 
     /**
-     * Method to make json object request where json response starts wtih {
+     * Method to make json object request
      */
     private void makeJsonObjectRequest() {
 
@@ -53,17 +63,16 @@ public class MainActivity extends Activity {
 
                 try {
                     JSONArray animals = response.optJSONArray("animals");
-
+                    animalsList= new ArrayList<>();
                     for (int i = 0; i < animals.length(); i++) {
+                        Animal itemAnimal = new Animal();
                         JSONObject animalsArr = (JSONObject) animals.get(i);
-                        String name = animalsArr.getString("name");
-                        String imgURL = animalsArr.getString("imgURL");
-
-                        jsonResponse += "Name: " + name + "\n\n";
-                        jsonResponse += "imgURL: " + imgURL + "\n\n";
+                        itemAnimal.setName(animalsArr.getString("name"));
+                        itemAnimal.setImgURL(animalsArr.getString("imgURL"));
+                        animalsList.add(itemAnimal);
+                        System.out.println("animalsList"+animalsList.toString());
                     }
 
-                    txtResponse.setText(jsonResponse);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -82,7 +91,8 @@ public class MainActivity extends Activity {
                         error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-        AppController.getInstance().addToRequestQueue(jsonObjReq);
+        //AppController.getInstance().addToRequestQueue(jsonObjReq);
+
     }
 
 
